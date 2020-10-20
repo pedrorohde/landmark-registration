@@ -39,3 +39,25 @@ def landmark_registration(x, data, landmarks, new_landmarks):
     registered_data = np.array([CubicSpline(x.squeeze(),data[:,i],axis=0)(warpings[:,i]).squeeze() for i in range(N)]).T
 
     return registered_data, warpings
+
+
+def warping(x, landmarks, new_landmarks):
+
+    tmin = x[0, 0]
+    tmax = x[-1, 0]
+    N = landmarks.shape[1]
+
+    t =  np.concatenate([tmin*np.ones([1,N]), new_landmarks, tmax*np.ones([1,N])])
+    ht = np.concatenate([tmin*np.ones([1,N]), landmarks,     tmax*np.ones([1,N])])
+
+    warpings = np.hstack([PchipInterpolator(t[:,i], ht[:,i])(x) for i in range(N)])
+
+    return warpings
+
+
+def compose(x, data, warpings):
+
+    N = data.shape[1]
+    composition = np.array([CubicSpline(x.squeeze(),data[:,i],axis=0)(warpings[:,i]).squeeze() for i in range(N)]).T
+    
+    return composition
